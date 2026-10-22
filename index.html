@@ -1,31 +1,11 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Accueil - Bricoloop</title>
-<style>
-body{font-family:Arial;background:#f3f6f4;color:#18392b;margin:0}
-main{max-width:900px;margin:50px auto;padding:24px}
-nav{display:flex;gap:12px;flex-wrap:wrap;margin:25px 0}
-a{color:#17633d}
-nav a,article{background:white;padding:20px;border-radius:12px}
-nav a{text-decoration:none}
-article{margin:15px 0;border:1px solid #d8e5dc}
-p{line-height:1.6}
-</style>
-</head>
-<body><main>
-<h1>Bricoloop ? Accueil</h1>
-<nav>
-<a href="./index.html">Accueil</a>
-<a href="./outils.html">Outils</a>
-<a href="./voisins.html">Voisins</a>
-<a href="./categories.html">Categories</a>
-</nav>
-<p>Bienvenue sur Bricoloop, le partage d'outils entre voisins.</p>
-   <article><h2>4 voisins</h2>
-   <p>8 outils dans 3 categories.</p>
-   <p>Utilisez les boutons pour parcourir le catalogue.</p></article>
-<footer><p>Demonstration sans base de donnees.</p></footer>
-</main></body></html>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bricoloop · Moins acheter, plus partager</title><link rel="stylesheet" href="style.css"></head><body>
+<header><a class="brand" href="#accueil"><span class="logo">b.</span>bricoloop<span class="dot">●</span></a><nav aria-label="Navigation principale"><a href="#catalogue">Les outils</a><a href="#fonctionnement">Comment ça marche</a><a href="#prets">Mes prêts <b id="badge">0</b></a></nav><label class="profile">Mode démo · Je suis<select id="identity" aria-label="Voisin utilisé pour la démonstration"></select></label></header>
+<main><section id="accueil" class="hero"><div><div class="eyebrow">LE BON OUTIL. JUSTE À CÔTÉ.</div><h1>Votre prochain projet<br>commence <em>chez<br>un voisin.</em></h1><p>Une étagère à fixer, une haie à tailler ? Empruntez l’outil qu’il vous faut et faites vivre l’entraide de quartier.</p><a class="button" href="#catalogue">Trouver mon outil <span>↗</span></a><div class="hero-note"><span class="avatars">A K L H</span><span>4 voisins, une même envie de partager.</span></div></div><div class="hero-art"><div class="circle"></div><div class="tool-illustration">🧰</div><span class="floating top">✦ Moins d’achats inutiles</span><span class="floating bottom">↗ Plus de liens entre voisins</span><div class="art-label">ON A TOUS QUELQUE CHOSE<br>À SE PRÊTER.</div></div></section>
+<section class="stats" aria-label="Le quartier en chiffres"><div><strong>08</strong><span>outils à découvrir</span></div><div><strong>04</strong><span>voisins prêts à aider</span></div><div><strong>03</strong><span>catégories pour vos projets</span></div><div><strong>0 €</strong><span>de frais de prêt dans cette démo</span></div></section>
+<section id="catalogue" class="section"><div class="heading"><div><span class="eyebrow">LE CATALOGUE DU QUARTIER</span><h2>Un outil pour chaque idée.</h2></div><p>Des outils utiles, des voisins accessibles.<br>Choisissez, demandez, bricolez.</p></div><div class="filters"><label class="search"><span>⌕</span><input id="search" placeholder="Perceuse, jardinage, voisin…" aria-label="Rechercher un outil"></label><div id="categories" class="chips" aria-label="Filtrer par catégorie"></div><label class="available"><input id="available" type="checkbox"> Disponibles uniquement</label></div><p id="count" class="muted"></p><div id="tools" class="grid"></div></section>
+<section id="fonctionnement" class="how section"><span class="eyebrow">SIMPLE COMME UN COUP DE MAIN</span><h2>Un prêt, trois petits pas.</h2><div class="steps"><article><span>01</span><h3>Trouvez la bonne pièce</h3><p>Explorez le catalogue, lisez les conseils d’utilisation et choisissez vos dates.</p></article><article><span>02</span><h3>Demandez à votre voisin</h3><p>Le propriétaire examine la demande et l’accepte ou la refuse. Un prêt n’est confirmé qu’après acceptation.</p></article><article><span>03</span><h3>Bricolez, puis rendez</h3><p>Convenez de la remise, vérifiez l’état ensemble et restituez l’outil propre et complet.</p></article></div></section>
+<section id="prets" class="section"><div class="heading"><div><span class="eyebrow">LE TABLEAU DE BORD</span><h2>Les bons outils font les bons voisins.</h2></div><div id="loan-tabs" class="chips"><button data-tab="received" class="active">Demandes reçues</button><button data-tab="sent">Mes demandes</button></div></div><div class="demo-note"><strong>Démonstration locale</strong> — Les demandes sont enregistrées uniquement dans ce navigateur. Changez de voisin en haut pour tester l’acceptation. Aucune demande n’est envoyée à une vraie personne.</div><div id="loans"></div></section>
+<section class="section guide"><div><span class="eyebrow">LA CHARTE DU BON VOISIN</span><h2>On partage les outils.<br>Et les bonnes habitudes.</h2><p>Un peu d’attention fait toute la différence.</p></div><div class="tips"><details open><summary>Avant d’emprunter</summary><p>Précisez votre projet et vos dates. Vérifiez les accessoires, les protections nécessaires et l’état de l’outil avec son propriétaire.</p></details><details><summary>Pendant l’utilisation</summary><p>Suivez la notice du fabricant. Portez les protections adaptées. Arrêtez immédiatement en cas de bruit, d’odeur ou de fonctionnement anormal.</p></details><details><summary>Pour un retour sans souci</summary><p>Nettoyez l’outil, réunissez les accessoires et respectez la date convenue. Signalez rapidement tout incident au propriétaire.</p></details><details><summary>Et si mon projet prend du retard ?</summary><p>Demandez l’accord du propriétaire avant de prolonger. Cette démonstration ne gère pas les prolongations ni la messagerie.</p></details></div></section>
+<section class="closing"><span>MOINS POSSÉDER. PLUS FAIRE ENSEMBLE.</span><h2>Le quartier a de la ressource.</h2><a class="button light" href="#catalogue">Découvrir les outils ↗</a></section></main>
+<footer><a class="brand" href="#accueil">bricoloop.</a><p>Prototype de partage d’outils · Données fictives · Sans paiement ni assurance intégrés.</p><button id="reset" class="text-button">Effacer les demandes de ce navigateur</button></footer>
+<dialog id="detail"><button class="close" aria-label="Fermer">×</button><div id="detail-content"></div></dialog><dialog id="booking"><button class="close" aria-label="Fermer">×</button><span class="eyebrow">UN PROJET EN VUE ?</span><h2>Demander un prêt</h2><p id="booking-title"></p><form id="request-form"><div class="date-grid"><label>Du<input type="date" id="from" required></label><label>Au<input type="date" id="to" required></label></div><label>Votre projet<textarea id="message" maxlength="500" required placeholder="Expliquez en quelques mots ce que vous souhaitez faire…"></textarea></label><label class="check"><input type="checkbox" required> Je m’engage à respecter les dates et à rendre l’outil propre et complet.</label><p id="form-error" role="alert"></p><button class="button" type="submit">Enregistrer ma demande ↗</button><p class="muted">Démo : le propriétaire pourra répondre en changeant de profil dans ce navigateur.</p></form></dialog><div id="toast" role="status" aria-live="polite"></div><script src="app.js"></script></body></html>

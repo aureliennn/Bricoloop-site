@@ -1,4 +1,5 @@
-﻿import { toolImage } from './images.js?v=bd111fe';
+﻿import { errorMessage, readJson } from './api-errors.js?v=296a098';
+import { toolImage } from './images.js?v=296a098';
 
 const dialog = document.querySelector('#reservation');
 const form = dialog.querySelector('form');
@@ -37,10 +38,24 @@ function showMessage(className, text) {
 
 async function getJson(url) {
   const response = await fetch(url);
+  const body = await readJson(response);
   if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`);
+    throw new Error(errorMessage(response.status, body));
   }
-  return response.json();
+  return body;
+}
+
+// Fiche de l'outil : description et propriétaire.
+function renderSheet({ description, owner }) {
+  const name = [owner?.firstName, owner?.lastName].filter(Boolean).join(' ');
+  const rows = [['Description', description], ['Propriétaire', name], ['Quartier', owner?.district]];
+  dialog.querySelector('#reservation-sheet').replaceChildren(...rows.flatMap(([label, value]) => {
+    const term = document.createElement('dt');
+    term.textContent = label;
+    const detail = document.createElement('dd');
+    detail.textContent = value || 'Non renseigné';
+    return [term, detail];
+  }));
 }
 
 function isSelected(date) {
@@ -121,6 +136,7 @@ export async function openReservation(selectedTool, statusLabel) {
   const image = dialog.querySelector('#reservation-image');
   image.src = toolImage(tool);
   image.alt = `Illustration : ${tool.name}`;
+  dialog.querySelector('#reservation-sheet').replaceChildren();
 
   // Le formulaire reste bloqué tant que les dates réservées ne sont pas connues.
   submit.disabled = true;
@@ -129,8 +145,12 @@ export async function openReservation(selectedTool, statusLabel) {
   dialog.showModal();
 
   try {
-    const periods = await getJson(`/api/tools/${selectedTool.id}/reservations`);
+    const [sheet, periods] = await Promise.all([
+      getJson(`/api/tools/${selectedTool.id}`),
+      getJson(`/api/tools/${selectedTool.id}/reservations`),
+    ]);
     if (tool !== selectedTool) return;
+    renderSheet(sheet);
     reserved = periods;
     renderCalendar();
     if (tool.status === 'unavailable') {
@@ -138,9 +158,9 @@ export async function openReservation(selectedTool, statusLabel) {
     } else {
       submit.disabled = false;
     }
-  } catch {
+  } catch (error) {
     if (tool === selectedTool) {
-      showMessage('error-message', 'Impossible de charger les disponibilités. Ferme ce menu et réessaie.');
+      showMessage('error-message', `Impossible de charger cet outil. ${error instanceof TypeError ? 'Vérifie que le serveur est lancé.' : error.message}`);
     }
   }
 }
@@ -155,7 +175,7 @@ async function sendRequest() {
       endDate: inputs.endDate.value,
     }),
   });
-  return { status: response.status, body: await response.json() };
+  return { status: response.status, body: await readJson(response) };
 }
 
 form.addEventListener('submit', async (event) => {
@@ -173,7 +193,7 @@ form.addEventListener('submit', async (event) => {
       renderCalendar();
       showMessage('success-message', 'Demande envoyée. Elle est en attente de réponse du propriétaire.');
     } else {
-      showMessage('error-message', body.error);
+      showMessage('error-message', errorMessage(status, body));
     }
   } catch {
     if (tool === requestedTool) {

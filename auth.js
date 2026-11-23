@@ -22,12 +22,13 @@ function showAuthTab() {
   const registration = location.hash === '#inscription';
   loginForm.hidden = registration;
   registerForm.hidden = !registration;
+  document.querySelector('#profile-form').hidden = registration;
 
   document.querySelector('#login-tab').setAttribute('aria-selected', String(!registration));
   document.querySelector('#register-tab').setAttribute('aria-selected', String(registration));
 }
 
-async function refreshAccount() {
+export async function refreshAccount() {
   try {
     const response = await fetch('/api/auth/me');
     if (!response.ok) {

@@ -1,4 +1,4 @@
-﻿import { createLoanCard, paragraph } from './loan-display.js?v=bd111fe';
+﻿import { createLoanCard, paragraph } from './loan-display.js?v=296a098';
 
 const list = document.querySelector('#requests-list');
 const message = document.querySelector('#requests-message');
@@ -29,23 +29,26 @@ function createButton(label, className, loan, action) {
   button.type = 'button';
   button.className = className;
   button.textContent = label;
-  button.setAttribute(
-    'aria-label',
-    `${label} la demande de ${loan.borrower.firstName} pour ${loan.tool.name}`,
-  );
+  button.setAttribute('aria-label', action === 'return'
+    ? `${label} de « ${loan.tool.name} » (emprunté par ${loan.borrower.firstName})`
+    : `${label} la demande de ${loan.borrower.firstName} pour ${loan.tool.name}`);
   button.addEventListener('click', () => answer(loan, action));
   return button;
 }
 
 function createCard(loan) {
   let actions;
-  if (loan.status === 'pending') {
+  if (loan.status === 'pending' || loan.status === 'accepted') {
     actions = document.createElement('div');
     actions.className = 'request-actions';
-    actions.append(
-      createButton('Accepter', 'button-accept', loan, 'accept'),
-      createButton('Refuser', 'button-refuse', loan, 'refuse'),
-    );
+    if (loan.status === 'accepted') {
+      actions.append(createButton('Déclarer le retour', 'button-accept', loan, 'return'));
+    } else {
+      actions.append(
+        createButton('Accepter', 'button-accept', loan, 'accept'),
+        createButton('Refuser', 'button-refuse', loan, 'refuse'),
+      );
+    }
   }
 
   return createLoanCard(loan, `${loan.borrower.firstName} (${loan.borrower.district})`, actions);
@@ -75,12 +78,12 @@ async function answer(loan, action) {
 
   try {
     await callApi(`/api/loans/${loan.id}/${action}`, { method: 'POST' });
-    showMessage(
-      'success-message',
-      action === 'accept'
-        ? `Demande acceptée. L'outil « ${loan.tool.name} » est maintenant prêté.`
-        : `Demande refusée pour « ${loan.tool.name} ».`,
-    );
+    const successMessages = {
+      accept: `Demande acceptée. L'outil « ${loan.tool.name} » est maintenant prêté.`,
+      refuse: `Demande refusée pour « ${loan.tool.name} ».`,
+      return: `Retour enregistré. L’outil « ${loan.tool.name} » est de nouveau disponible.`,
+    };
+    showMessage('success-message', successMessages[action]);
   } catch (error) {
     showMessage('error-message', error.message);
   }

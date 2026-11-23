@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="fr">
 <head>
   <meta charset="utf-8">
@@ -6,13 +6,14 @@
   <meta name="description" content="BricoLoop : le partage d'outils entre voisins.">
   <title>BricoLoop - Partage d'outils</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="style.css?v=bd111fe">
-  <script type="module" src="api-demo.js?v=bd111fe"></script>
-  <script type="module" src="main.js?v=bd111fe"></script>
-  <script type="module" src="auth.js?v=bd111fe"></script>
-  <script type="module" src="proposer.js?v=bd111fe"></script>
-  <script type="module" src="requests.js?v=bd111fe"></script>
-  <script type="module" src="borrowings.js?v=bd111fe"></script>
+  <link rel="stylesheet" href="style.css?v=296a098">
+  <script type="module" src="api-demo.js?v=296a098"></script>
+  <script type="module" src="main.js?v=296a098"></script>
+  <script type="module" src="auth.js?v=296a098"></script>
+  <script type="module" src="profile.js?v=296a098"></script>
+  <script type="module" src="proposer.js?v=296a098"></script>
+  <script type="module" src="requests.js?v=296a098"></script>
+  <script type="module" src="borrowings.js?v=296a098"></script>
 </head>
 <body>
   <header class="site-header">
@@ -26,8 +27,6 @@
       <a href="#proposer">Proposer un outil</a>
       <a href="#demandes">Demandes reçues</a>
       <a href="#emprunts">Mes emprunts</a>
-      <a href="#connexion">Connexion</a>
-      <a href="#inscription">Création de compte</a>
     </nav>
 
     <div id="account-area" class="account-area">
@@ -52,8 +51,20 @@
         <a href="#inscription" id="register-tab" role="tab">Création de compte</a>
       </div>
 
+      <form id="profile-form" class="auth-form" novalidate>
+        <h3>Choisis ton profil</h3>
+        <div class="field">
+          <label for="profile">Profil de démo, sans mot de passe</label>
+          <select id="profile" aria-describedby="profile-message">
+            <option value="">Choisis ton profil</option>
+          </select>
+        </div>
+        <p id="profile-message" class="form-message" role="alert"></p>
+        <button type="submit">Continuer avec ce profil</button>
+      </form>
+
       <form id="login-form" class="auth-form" novalidate>
-        <h3>Connexion</h3>
+        <h3>Ou connecte-toi à ton compte</h3>
         <div class="field">
           <label for="login-username">Utilisateur</label>
           <input id="login-username" name="username" autocomplete="username" required>
@@ -147,6 +158,7 @@
         <img id="reservation-image" class="reservation-image" alt="" width="320" height="200">
         <h2 id="reservation-title"></h2>
         <p id="reservation-details" class="intro"></p>
+        <dl id="reservation-sheet" class="reservation-sheet"></dl>
       </div>
 
       <div class="calendar">

@@ -2,9 +2,9 @@
 // Ce fichier répond à la place de l'API, avec les données et la validation du projet.
 // Les comptes, les outils, les demandes et les réponses restent dans le navigateur de chaque visiteur.
 // Les mots de passe y sont hachés et ne sont jamais envoyés.
-import * as seed from './src/seed.js?v=bd111fe';
-import { overlaps, reservedPeriods, validateLoanDates } from './src/validation/loan.js?v=bd111fe';
-import { CREATION_CATEGORIES, validateTool } from './src/validation/tool.js?v=bd111fe';
+import * as seed from './src/seed.js?v=296a098';
+import { overlaps, reservedPeriods, validateLoanDates } from './src/validation/loan.js?v=296a098';
+import { CREATION_CATEGORIES, validateTool } from './src/validation/tool.js?v=296a098';
 
 const STATUS_ORDER = { available: 0, lent: 1, unavailable: 2 };
 
@@ -69,16 +69,18 @@ async function hashPassword(password, salt) {
 function allLoans() {
   const saved = answers.all();
   return [...seed.loans, ...addedLoans.all()].map((loan) => {
-    const answer = saved.find(({ loanId }) => loanId === loan.id);
+    const answer = saved.findLast(({ loanId }) => loanId === loan.id);
     return answer ? { ...loan, status: answer.status } : loan;
   });
 }
 
-// Un outil dont une demande est acceptée est prêté.
+// Comme sur le serveur : accepter prête l'outil, déclarer le retour le rend disponible.
 function allTools() {
-  const accepted = allLoans().filter(({ status }) => status === 'accepted');
+  const toolOf = new Map([...seed.loans, ...addedLoans.all()].map(({ id, toolId }) => [id, toolId]));
+  const events = answers.all().filter(({ status }) => status === 'accepted' || status === 'returned');
   return [...seed.tools, ...addedTools.all()].map((tool) => {
-    return accepted.some(({ toolId }) => toolId === tool.id) ? { ...tool, status: 'lent' } : tool;
+    const last = events.findLast(({ loanId }) => toolOf.get(loanId) === tool.id);
+    return last ? { ...tool, status: last.status === 'accepted' ? 'lent' : 'available' } : tool;
   });
 }
 
@@ -272,6 +274,37 @@ function answerLoan(options, id, action) {
   return json(200, { ...loan, status });
 }
 
+function returnLoan(options, id) {
+  const user = currentUser();
+  if (!user) return json(401, { error: 'Connecte-toi pour déclarer le retour d’un outil.' });
+
+  const loan = allLoans().find((item) => item.id === Number(id));
+  if (!loan) return json(404, { error: 'Ce prêt n’existe pas.' });
+  if (findTool(loan.toolId).ownerId !== user.id) return json(403, { error: 'Seul le propriétaire de l’outil peut déclarer son retour.' });
+  if (loan.status !== 'accepted') return json(409, { error: 'Seul un prêt accepté peut être déclaré rendu.' });
+
+  answers.add({ loanId: loan.id, status: 'returned' });
+  return json(200, { ...loan, status: 'returned' });
+}
+
+function listProfiles() {
+  return json(200, allUsers()
+    .filter(({ passwordHash }) => !passwordHash)
+    .map(({ id, firstName, district }) => ({ id, firstName, district })));
+}
+
+function chooseProfile(options) {
+  const { userId } = JSON.parse(options.body);
+  if (!Number.isInteger(userId)) return json(400, { error: 'Choisis un profil.' });
+
+  const user = allUsers().find(({ id }) => id === userId);
+  if (!user) return json(404, { error: 'Ce profil n’existe pas.' });
+  if (user.passwordHash) return json(403, { error: 'Ce compte demande un mot de passe. Utilise la connexion.' });
+
+  setSession(user.id);
+  return json(200, { message: 'Profil choisi.', user: publicUser(user) });
+}
+
 const routes = [
   [/^GET \/api\/tools$/, listTools],
   [/^POST \/api\/tools$/, createTool],
@@ -283,6 +316,9 @@ const routes = [
   [/^GET \/api\/loans\/mine$/, listMine],
   [/^POST \/api\/loans\/(\d+)\/(accept|refuse)$/, answerLoan],
   [/^GET \/api\/users$/, () => json(200, allUsers().map(({ id, firstName, district }) => ({ id, firstName, district })))],
+  [/^POST \/api\/loans\/(\d+)\/return$/, returnLoan],
+  [/^GET \/api\/auth\/profiles$/, listProfiles],
+  [/^POST \/api\/auth\/profile$/, chooseProfile],
   [/^GET \/api\/auth\/me$/, me],
   [/^POST \/api\/auth\/register$/, register],
   [/^POST \/api\/auth\/login$/, login],

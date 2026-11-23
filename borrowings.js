@@ -1,4 +1,4 @@
-import { createLoanCard, paragraph } from './loan-display.js?v=bd111fe';
+import { createLoanCard, paragraph } from './loan-display.js?v=296a098';
 
 const list = document.querySelector('#borrowings-list');
 

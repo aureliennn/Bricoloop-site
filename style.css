@@ -731,7 +731,8 @@ footer {
   margin: 0;
 }
 
-.auth-form .field input {
+.auth-form .field input,
+.auth-form .field select {
   width: 100%;
   padding: 0.7rem 0.8rem;
   border: 1px solid #8a968d;
@@ -777,6 +778,29 @@ footer {
 
 [hidden] {
   display: none !important;
+}
+
+#profile-form {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e4eae5;
+}
+
+.reservation-sheet {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.2rem 0.75rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+}
+
+.reservation-sheet dt {
+  color: #66736a;
+}
+
+.reservation-sheet dd {
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 650px) {

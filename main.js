@@ -1,4 +1,4 @@
-﻿import { openReservation } from './reservation.js?v=bd111fe';
+﻿import { openReservation } from './reservation.js?v=296a098';
 
 const app = document.querySelector('#app');
 const authPage = document.querySelector('#auth-page');

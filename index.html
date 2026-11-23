@@ -1,20 +1,75 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>BricoLoop</title>
-    <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="style.css">
-    <script type="module" src="main.js"></script>
-  </head>
-  <body>
-    <header>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Découvrez les outils disponibles au prêt entre voisins.">
+  <title>BricoLoop - Catalogue des outils</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="api-demo.js"></script>
+  <script type="module" src="main.js"></script>
+  <script type="module" src="proposer.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-content">
       <h1>BricoLoop</h1>
       <p>Prêter et emprunter des outils entre voisins.</p>
-    </header>
-    <main id="app">
-      <p>Le site est en construction.</p>
-    </main>
-  </body>
+    </div>
+    <nav class="tabs" aria-label="Navigation principale">
+      <a href="#catalogue">Catalogue</a>
+      <a href="#proposer">Proposer un outil</a>
+    </nav>
+  </header>
+
+  <main id="app" aria-live="polite">
+    <p>Chargement du catalogue...</p>
+  </main>
+
+  <main id="proposer-page" hidden>
+    <h2>Proposer un outil</h2>
+    <p class="intro">Tes voisins pourront l'emprunter, et tu gardes la main sur chaque prêt.</p>
+
+    <form id="tool-form" class="tool-form" novalidate>
+      <div class="field">
+        <label for="user">Ton profil</label>
+        <select id="user" aria-describedby="user-error">
+          <option value="">Choisis ton profil</option>
+        </select>
+        <p class="field-error" id="user-error"></p>
+      </div>
+
+      <div class="field">
+        <label for="name">Nom de l'outil</label>
+        <input id="name" autocomplete="off" aria-describedby="name-hint name-error">
+        <p class="field-hint" id="name-hint">Entre 2 et 60 caractères.</p>
+        <p class="field-error" id="name-error"></p>
+      </div>
+
+      <div class="field">
+        <label for="category">Catégorie</label>
+        <select id="category" aria-describedby="category-error">
+          <option value="">Choisis une catégorie</option>
+        </select>
+        <p class="field-error" id="category-error"></p>
+      </div>
+
+      <div class="field">
+        <label for="description">Description (facultative)</label>
+        <textarea id="description" rows="4" aria-describedby="description-count description-error"></textarea>
+        <p class="field-hint" id="description-count">0 / 300 caractères</p>
+        <p class="field-error" id="description-error"></p>
+      </div>
+
+      <button type="submit">Proposer l'outil</button>
+      <div id="form-message" role="status"></div>
+    </form>
+  </main>
+
+  <footer>
+    <p>BricoLoop - Le partage d'outils entre voisins.</p>
+    <p>Démo en ligne : les outils ajoutés disparaissent au rechargement de la page.</p>
+  </footer>
+</body>
 </html>

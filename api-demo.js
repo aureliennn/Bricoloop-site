@@ -1,11 +1,34 @@
 // Version en ligne seulement : GitHub Pages n'a pas de serveur.
 // Ce fichier répond à la place de l'API, avec les données et la validation du projet.
-// Les outils ajoutés restent dans la page et disparaissent au rechargement.
-import * as seed from './src/seed.js';
-import { CREATION_CATEGORIES, validateTool } from './src/validation/tool.js';
+// Les outils ajoutés sont gardés dans le navigateur de chaque visiteur.
+import * as seed from './src/seed.js?v=7aee656b';
+import { CREATION_CATEGORIES, validateTool } from './src/validation/tool.js?v=7aee656b';
 
-const tools = structuredClone(seed.tools);
+const STORAGE_KEY = 'bricoloop-outils-ajoutes';
 const STATUS_ORDER = { available: 0, loaned: 1, unavailable: 2 };
+
+// Utilisé si le navigateur refuse le stockage (navigation privée, par exemple).
+let memory = [];
+
+function addedTools() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    return Array.isArray(saved) ? saved : memory;
+  } catch {
+    return memory;
+  }
+}
+
+function saveAddedTools(tools) {
+  memory = tools;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tools));
+  } catch {
+    // Les outils restent en mémoire jusqu'au rechargement.
+  }
+}
+
+const allTools = () => [...seed.tools, ...addedTools()];
 
 const json = (status, body) => new Response(JSON.stringify(body), {
   status,
@@ -13,7 +36,7 @@ const json = (status, body) => new Response(JSON.stringify(body), {
 });
 
 function listTools() {
-  const sorted = [...tools].sort((a, b) => (STATUS_ORDER[a.status] ?? 3) - (STATUS_ORDER[b.status] ?? 3));
+  const sorted = allTools().sort((a, b) => (STATUS_ORDER[a.status] ?? 3) - (STATUS_ORDER[b.status] ?? 3));
   return json(200, sorted.map(({ id, name, category, status }) => ({ id, name, category, status })));
 }
 
@@ -30,12 +53,12 @@ function createTool(options) {
   }
 
   const created = {
-    id: Math.max(0, ...tools.map(({ id }) => id)) + 1,
+    id: Math.max(0, ...allTools().map(({ id }) => id)) + 1,
     ownerId: user.id,
     ...tool,
     status: 'available',
   };
-  tools.push(created);
+  saveAddedTools([...addedTools(), created]);
   return json(201, created);
 }
 

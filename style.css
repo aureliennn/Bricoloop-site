@@ -103,7 +103,7 @@ header {
   background: #e4f5e9;
 }
 
-.status-loaned {
+.status-lent {
   color: #926000;
   background: #fff1d2;
 }
@@ -171,12 +171,14 @@ footer {
   color: white;
 }
 
-#proposer-page {
+#proposer-page,
+#requests-page {
   min-height: 65vh;
   padding: 2.5rem 0;
 }
 
-#proposer-page h2 {
+#proposer-page h2,
+#requests-page h2 {
   margin: 0;
   font-size: 1.5rem;
 }
@@ -268,6 +270,7 @@ footer {
 }
 
 .tabs a:focus-visible,
+#requests-page :focus-visible,
 .tool-open:focus-visible,
 #reservation :focus-visible,
 .tool-form :focus-visible {
@@ -285,6 +288,7 @@ footer {
 }
 
 #form-message .error-message,
+#requests-message p,
 #reservation-message .error-message {
   margin: 0;
 }
@@ -501,6 +505,105 @@ footer {
   width: 0.9rem;
   height: 0.9rem;
   border-radius: 4px;
+}
+
+.owner-field {
+  max-width: 20rem;
+  margin-bottom: 1.25rem;
+}
+
+#requests-message:not(:empty) {
+  margin-bottom: 1.25rem;
+}
+
+.requests-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.request-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: white;
+  border: 1px solid #e4eae5;
+  border-radius: 12px;
+}
+
+.request-card h3 {
+  margin: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.request-detail {
+  margin: 0.2rem 0 0;
+  color: #66736a;
+  font-size: 0.9rem;
+}
+
+.request-side,
+.request-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.request-pending {
+  color: #805300;
+  background: #fff1d2;
+}
+
+.request-accepted {
+  color: #18713d;
+  background: #e4f5e9;
+}
+
+.request-refused {
+  color: #a33333;
+  background: #fbe7e7;
+}
+
+.request-returned {
+  color: #55605a;
+  background: #eef1ee;
+}
+
+.request-actions button {
+  padding: 0.5rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.request-actions button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.button-accept {
+  background: #24734b;
+  color: white;
+}
+
+.button-accept:hover {
+  background: #1b5a3a;
+}
+
+.request-actions .button-refuse {
+  border-color: #a33333;
+  background: white;
+  color: #a33333;
+}
+
+.request-actions .button-refuse:hover {
+  background: #fbe7e7;
 }
 
 @media (max-width: 640px) {

@@ -10,7 +10,7 @@ export const users = [
 ];
 
 export const tools = [
-  { id: 1, ownerId: 1, name: 'Perceuse à percussion', category: 'Perçage', description: 'Livrée avec un jeu de forets béton et bois.', status: 'available' },
+  { id: 1, ownerId: 1, name: 'Perceuse à percussion', category: 'Perçage', description: 'Livrée avec un jeu de forets béton et bois.', status: 'lent' },
   { id: 2, ownerId: 1, name: 'Niveau laser', category: 'Mesure', description: 'Portée de 15 mètres.', status: 'available' },
   { id: 3, ownerId: 2, name: 'Taille-haie électrique', category: 'Jardinage', description: 'Lame de 50 cm, rallonge non fournie.', status: 'unavailable' },
   { id: 4, ownerId: 2, name: 'Tondeuse', category: 'Jardinage', description: 'Tondeuse électrique pour petit jardin.', status: 'available' },
@@ -26,8 +26,7 @@ function inDays(n) {
   return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + n)).toISOString().slice(0, 10);
 }
 
-// Un prêt à venir déjà accepté, pour voir des dates réservées dans le calendrier (US-04).
-// L'outil reste « available » : le prêt n'a pas commencé.
+// Un prêt déjà accepté, pour voir des dates réservées dans le calendrier (US-04).
 export const loans = [
   { id: 1, toolId: 1, borrowerId: 3, startDate: inDays(3), endDate: inDays(6), status: 'accepted' },
 ];

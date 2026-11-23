@@ -6,10 +6,11 @@
   <meta name="description" content="Découvrez les outils disponibles au prêt entre voisins.">
   <title>BricoLoop - Catalogue des outils</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="style.css?v=ebfb8a1">
-  <script type="module" src="api-demo.js?v=ebfb8a1"></script>
-  <script type="module" src="main.js?v=ebfb8a1"></script>
-  <script type="module" src="proposer.js?v=ebfb8a1"></script>
+  <link rel="stylesheet" href="style.css?v=d8a5b87">
+  <script type="module" src="api-demo.js?v=d8a5b87"></script>
+  <script type="module" src="main.js?v=d8a5b87"></script>
+  <script type="module" src="proposer.js?v=d8a5b87"></script>
+  <script type="module" src="requests.js?v=d8a5b87"></script>
 </head>
 <body>
   <header class="site-header">
@@ -20,6 +21,7 @@
     <nav class="tabs" aria-label="Navigation principale">
       <a href="#catalogue">Catalogue</a>
       <a href="#proposer">Proposer un outil</a>
+      <a href="#demandes">Demandes reçues</a>
     </nav>
   </header>
 
@@ -65,6 +67,21 @@
       <button type="submit">Proposer l'outil</button>
       <div id="form-message" role="status"></div>
     </form>
+  </main>
+
+  <main id="requests-page" hidden>
+    <h2>Demandes reçues</h2>
+    <p class="intro">Accepte ou refuse les demandes d'emprunt sur tes outils.</p>
+
+    <div class="field owner-field">
+      <label for="owner">Ton profil</label>
+      <select id="owner">
+        <option value="">Choisis ton profil</option>
+      </select>
+    </div>
+
+    <div id="requests-message" role="status"></div>
+    <div id="requests-list" class="requests-list"></div>
   </main>
 
   <dialog id="reservation" aria-labelledby="reservation-title">
@@ -119,7 +136,7 @@
 
   <footer>
     <p>BricoLoop - Le partage d'outils entre voisins.</p>
-    <p>Démo en ligne : les outils et les demandes ajoutés restent dans ton navigateur.</p>
+    <p>Démo en ligne : tes ajouts et tes réponses restent dans ton navigateur.</p>
   </footer>
 </body>
 </html>

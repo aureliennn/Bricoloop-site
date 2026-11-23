@@ -1,10 +1,10 @@
-﻿import { openReservation } from './reservation.js?v=ebfb8a1';
+﻿import { openReservation } from './reservation.js?v=d8a5b87';
 
 const app = document.querySelector('#app');
 
 const STATUS_LABELS = {
   available: 'Disponible',
-  loaned: 'Prêté',
+  lent: 'Prêté',
   unavailable: 'Indisponible',
 };
 
@@ -97,12 +97,20 @@ async function loadTools() {
   }
 }
 
-// L'adresse (#catalogue ou #proposer) choisit l'onglet affiché.
-function showPage() {
-  const page = location.hash === '#proposer' ? 'proposer' : 'catalogue';
+// L'adresse (#catalogue, #proposer ou #demandes) choisit l'onglet affiché.
+const PAGES = {
+  catalogue: app,
+  proposer: document.querySelector('#proposer-page'),
+  demandes: document.querySelector('#requests-page'),
+};
 
-  app.hidden = page !== 'catalogue';
-  document.querySelector('#proposer-page').hidden = page !== 'proposer';
+function showPage() {
+  const hash = location.hash.slice(1);
+  const page = Object.hasOwn(PAGES, hash) ? hash : 'catalogue';
+
+  Object.entries(PAGES).forEach(([name, element]) => {
+    element.hidden = name !== page;
+  });
 
   document.querySelectorAll('.tabs a').forEach((link) => {
     if (link.hash === `#${page}`) {

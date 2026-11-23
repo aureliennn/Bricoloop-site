@@ -1,11 +1,11 @@
 // Version en ligne seulement : GitHub Pages n'a pas de serveur.
 // Ce fichier répond à la place de l'API, avec les données et la validation du projet.
-// Les outils et les demandes ajoutés sont gardés dans le navigateur de chaque visiteur.
-import * as seed from './src/seed.js?v=ebfb8a1';
-import { overlaps, reservedPeriods, validateLoanDates } from './src/validation/loan.js?v=ebfb8a1';
-import { CREATION_CATEGORIES, validateTool } from './src/validation/tool.js?v=ebfb8a1';
+// Les outils, les demandes et les réponses sont gardés dans le navigateur de chaque visiteur.
+import * as seed from './src/seed.js?v=d8a5b87';
+import { overlaps, reservedPeriods, validateLoanDates } from './src/validation/loan.js?v=d8a5b87';
+import { CREATION_CATEGORIES, validateTool } from './src/validation/tool.js?v=d8a5b87';
 
-const STATUS_ORDER = { available: 0, loaned: 1, unavailable: 2 };
+const STATUS_ORDER = { available: 0, lent: 1, unavailable: 2 };
 
 // Liste gardée dans le navigateur, ou en mémoire s'il refuse le stockage (navigation privée).
 function savedList(key) {
@@ -32,8 +32,24 @@ function savedList(key) {
 
 const addedTools = savedList('bricoloop-outils-ajoutes');
 const addedLoans = savedList('bricoloop-demandes');
-const allTools = () => [...seed.tools, ...addedTools.all()];
-const allLoans = () => [...seed.loans, ...addedLoans.all()];
+const answers = savedList('bricoloop-reponses');
+
+function allLoans() {
+  const saved = answers.all();
+  return [...seed.loans, ...addedLoans.all()].map((loan) => {
+    const answer = saved.find(({ loanId }) => loanId === loan.id);
+    return answer ? { ...loan, status: answer.status } : loan;
+  });
+}
+
+// Un outil dont une demande est acceptée est prêté.
+function allTools() {
+  const accepted = allLoans().filter(({ status }) => status === 'accepted');
+  return [...seed.tools, ...addedTools.all()].map((tool) => {
+    return accepted.some(({ toolId }) => toolId === tool.id) ? { ...tool, status: 'lent' } : tool;
+  });
+}
+
 const nextId = (items) => Math.max(0, ...items.map(({ id }) => id)) + 1;
 const findTool = (toolId) => allTools().find(({ id }) => id === toolId);
 
@@ -94,12 +110,48 @@ function createLoan(options) {
   return json(201, loan);
 }
 
+function listReceived(options) {
+  const user = currentUser(options);
+  if (!user) return json(401, { error: 'Choisis ton profil pour voir les demandes reçues.' });
+
+  const myTools = allTools().filter(({ ownerId }) => ownerId === user.id);
+  const received = allLoans()
+    .filter((loan) => myTools.some(({ id }) => id === loan.toolId))
+    .sort((a, b) => {
+      return (b.status === 'pending') - (a.status === 'pending') || a.startDate.localeCompare(b.startDate);
+    })
+    .map(({ id, toolId, borrowerId, startDate, endDate, status }) => {
+      const tool = myTools.find((item) => item.id === toolId);
+      const { firstName, district } = seed.users.find((item) => item.id === borrowerId);
+      return { id, startDate, endDate, status, tool: { id: tool.id, name: tool.name }, borrower: { firstName, district } };
+    });
+  return json(200, received);
+}
+
+function answerLoan(options, id, action) {
+  const user = currentUser(options);
+  if (!user) return json(401, { error: 'Choisis ton profil avant de répondre à une demande.' });
+
+  const loan = allLoans().find((item) => item.id === Number(id));
+  if (!loan) return json(404, { error: 'Cette demande n\'existe pas.' });
+  if (findTool(loan.toolId).ownerId !== user.id) {
+    return json(403, { error: 'Seul le propriétaire de l\'outil peut répondre à cette demande.' });
+  }
+  if (loan.status !== 'pending') return json(409, { error: 'Cette demande a déjà reçu une réponse.' });
+
+  const status = action === 'accept' ? 'accepted' : 'refused';
+  answers.add({ loanId: loan.id, status });
+  return json(200, { ...loan, status });
+}
+
 const routes = [
   [/^GET \/api\/tools$/, listTools],
   [/^POST \/api\/tools$/, createTool],
   [/^GET \/api\/tools\/categories$/, () => json(200, CREATION_CATEGORIES)],
   [/^GET \/api\/tools\/(\d+)\/reservations$/, listReservations],
   [/^POST \/api\/loans$/, createLoan],
+  [/^GET \/api\/loans\/received$/, listReceived],
+  [/^POST \/api\/loans\/(\d+)\/(accept|refuse)$/, answerLoan],
   [/^GET \/api\/users$/, () => json(200, seed.users)],
 ];
 

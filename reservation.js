@@ -1,4 +1,4 @@
-import { toolImage } from './images.js?v=ebfb8a1';
+import { toolImage } from './images.js?v=d8a5b87';
 
 const dialog = document.querySelector('#reservation');
 const form = dialog.querySelector('form');

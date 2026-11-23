@@ -6,10 +6,10 @@
   <meta name="description" content="Découvrez les outils disponibles au prêt entre voisins.">
   <title>BricoLoop - Catalogue des outils</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="style.css?v=7aee656b">
-  <script type="module" src="api-demo.js?v=7aee656b"></script>
-  <script type="module" src="main.js?v=7aee656b"></script>
-  <script type="module" src="proposer.js?v=7aee656b"></script>
+  <link rel="stylesheet" href="style.css?v=ebfb8a1">
+  <script type="module" src="api-demo.js?v=ebfb8a1"></script>
+  <script type="module" src="main.js?v=ebfb8a1"></script>
+  <script type="module" src="proposer.js?v=ebfb8a1"></script>
 </head>
 <body>
   <header class="site-header">
@@ -67,9 +67,59 @@
     </form>
   </main>
 
+  <dialog id="reservation" aria-labelledby="reservation-title">
+    <div class="reservation">
+      <button type="button" id="reservation-close" class="reservation-close" aria-label="Fermer">×</button>
+
+      <div class="reservation-tool">
+        <img id="reservation-image" class="reservation-image" alt="" width="320" height="200">
+        <h2 id="reservation-title"></h2>
+        <p id="reservation-details" class="intro"></p>
+      </div>
+
+      <div class="calendar">
+        <div class="calendar-heading">
+          <button type="button" id="previous-month" aria-label="Mois précédent">‹</button>
+          <p id="calendar-month" aria-live="polite"></p>
+          <button type="button" id="next-month" aria-label="Mois suivant">›</button>
+        </div>
+        <div class="calendar-grid calendar-weekdays" aria-hidden="true">
+          <span>Lu</span><span>Ma</span><span>Me</span><span>Je</span><span>Ve</span><span>Sa</span><span>Di</span>
+        </div>
+        <div id="calendar-days" class="calendar-grid"></div>
+        <ul class="legend">
+          <li><span class="day-free"></span>Disponible</li>
+          <li><span class="day-reserved"></span>Déjà réservé</li>
+          <li><span class="day-selected"></span>Ta sélection</li>
+        </ul>
+      </div>
+
+      <form class="reservation-form" novalidate>
+        <div class="field">
+          <label for="borrower">Ton profil</label>
+          <select id="borrower">
+            <option value="">Choisis ton profil</option>
+          </select>
+        </div>
+        <div class="reservation-dates">
+          <div class="field">
+            <label for="start-date">Du</label>
+            <input type="date" id="start-date">
+          </div>
+          <div class="field">
+            <label for="end-date">Au</label>
+            <input type="date" id="end-date">
+          </div>
+        </div>
+        <button type="submit" id="reservation-submit">Demander l'emprunt</button>
+        <div id="reservation-message" role="status"></div>
+      </form>
+    </div>
+  </dialog>
+
   <footer>
     <p>BricoLoop - Le partage d'outils entre voisins.</p>
-    <p>Démo en ligne : les outils ajoutés restent dans ton navigateur.</p>
+    <p>Démo en ligne : les outils et les demandes ajoutés restent dans ton navigateur.</p>
   </footer>
 </body>
 </html>

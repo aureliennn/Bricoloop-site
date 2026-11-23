@@ -20,4 +20,14 @@ export const tools = [
   { id: 8, ownerId: 4, name: 'Visseuse sans fil', category: 'Perçage', description: 'Deux batteries et un chargeur.', status: 'available' },
 ];
 
-export const loans = [];
+// Date dans n jours, au format AAAA-MM-JJ.
+function inDays(n) {
+  const now = new Date();
+  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate() + n)).toISOString().slice(0, 10);
+}
+
+// Un prêt à venir déjà accepté, pour voir des dates réservées dans le calendrier (US-04).
+// L'outil reste « available » : le prêt n'a pas commencé.
+export const loans = [
+  { id: 1, toolId: 1, borrowerId: 3, startDate: inDays(3), endDate: inDays(6), status: 'accepted' },
+];

@@ -243,7 +243,8 @@ footer {
   display: none;
 }
 
-.tool-form button {
+.tool-form button,
+.reservation-form button {
   justify-self: start;
   padding: 0.65rem 1.25rem;
   border: 0;
@@ -255,16 +256,20 @@ footer {
   cursor: pointer;
 }
 
-.tool-form button:hover {
+.tool-form button:hover,
+.reservation-form button:hover {
   background: #1b5a3a;
 }
 
-.tool-form button:disabled {
+.tool-form button:disabled,
+.reservation-form button:disabled {
   opacity: 0.6;
   cursor: default;
 }
 
 .tabs a:focus-visible,
+.tool-open:focus-visible,
+#reservation :focus-visible,
 .tool-form :focus-visible {
   outline: 3px solid #7fbf9b;
   outline-offset: 2px;
@@ -279,8 +284,244 @@ footer {
   overflow-wrap: anywhere;
 }
 
-#form-message .error-message {
+#form-message .error-message,
+#reservation-message .error-message {
   margin: 0;
+}
+
+.tool-card {
+  position: relative;
+}
+
+.tool-card:hover {
+  border-color: #24734b;
+}
+
+.tool-open {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.tool-open::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+}
+
+#reservation {
+  width: min(46rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  color: inherit;
+  overflow-y: auto;
+}
+
+#reservation::backdrop {
+  background: rgb(15 30 22 / 55%);
+}
+
+.reservation {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas: 'tool calendar' 'form calendar';
+  grid-template-rows: auto 1fr;
+  gap: 1rem 1.5rem;
+  padding: 1.5rem;
+}
+
+.reservation-tool {
+  grid-area: tool;
+}
+
+.calendar {
+  grid-area: calendar;
+  padding-top: 2rem;
+}
+
+.reservation-form {
+  grid-area: form;
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+}
+
+.reservation-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.reservation-tool h2 {
+  margin: 0.75rem 0 0;
+  font-size: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.reservation-tool .intro {
+  margin: 0.2rem 0 0;
+}
+
+.reservation-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 8px;
+  background: #eef2ef;
+  color: inherit;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.reservation-dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.reservation-dates .field {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+.calendar-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.calendar-heading p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.calendar-heading button {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid #cbd6cd;
+  border-radius: 8px;
+  background: white;
+  color: #24734b;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.calendar-heading button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+}
+
+.calendar-weekdays {
+  margin-bottom: 0.25rem;
+  color: #66736a;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.day {
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.day:disabled {
+  cursor: not-allowed;
+}
+
+.day-free {
+  background: #bfe8cc;
+  color: #0f4a28;
+}
+
+.day-free:hover {
+  background: #9fdab2;
+}
+
+.day-reserved {
+  background: #f2a9a9;
+  color: #6b1414;
+  text-decoration: line-through;
+}
+
+.day-selected {
+  background: #f6a042;
+  color: #3a1c00;
+  font-weight: 700;
+}
+
+.day-closed {
+  background: #eef1ee;
+  color: #79837b;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  font-size: 0.85rem;
+  list-style: none;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend span {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 4px;
+}
+
+@media (max-width: 640px) {
+  .reservation {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'tool' 'calendar' 'form';
+    padding: 1rem;
+  }
+
+  .calendar {
+    padding-top: 0;
+  }
+
+  .reservation-dates {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reservation-image {
+    max-height: 9rem;
+    object-fit: cover;
+  }
 }
 
 @media (max-width: 500px) {

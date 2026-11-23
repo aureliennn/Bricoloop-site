@@ -1,4 +1,6 @@
-﻿const app = document.querySelector('#app');
+﻿import { openReservation } from './reservation.js?v=ebfb8a1';
+
+const app = document.querySelector('#app');
 
 const STATUS_LABELS = {
   available: 'Disponible',
@@ -14,7 +16,14 @@ function createToolCard(tool) {
   information.className = 'tool-information';
 
   const name = document.createElement('h3');
-  name.textContent = tool.name;
+
+  // Le bouton couvre toute la carte : un clic dessus ouvre la réservation.
+  const open = document.createElement('button');
+  open.type = 'button';
+  open.className = 'tool-open';
+  open.textContent = tool.name;
+  open.addEventListener('click', () => openReservation(tool, STATUS_LABELS[tool.status] ?? 'Statut inconnu'));
+  name.append(open);
 
   const category = document.createElement('p');
   category.className = 'tool-category';

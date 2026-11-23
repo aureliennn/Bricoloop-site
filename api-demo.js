@@ -1,9 +1,9 @@
 // Version en ligne seulement : GitHub Pages n'a pas de serveur.
 // Ce fichier répond à la place de l'API, avec les données et la validation du projet.
 // Les outils, les demandes et les réponses sont gardés dans le navigateur de chaque visiteur.
-import * as seed from './src/seed.js?v=d8a5b87';
-import { overlaps, reservedPeriods, validateLoanDates } from './src/validation/loan.js?v=d8a5b87';
-import { CREATION_CATEGORIES, validateTool } from './src/validation/tool.js?v=d8a5b87';
+import * as seed from './src/seed.js?v=b33974a';
+import { overlaps, reservedPeriods, validateLoanDates } from './src/validation/loan.js?v=b33974a';
+import { CREATION_CATEGORIES, validateTool } from './src/validation/tool.js?v=b33974a';
 
 const STATUS_ORDER = { available: 0, lent: 1, unavailable: 2 };
 
@@ -138,6 +138,10 @@ function answerLoan(options, id, action) {
     return json(403, { error: 'Seul le propriétaire de l\'outil peut répondre à cette demande.' });
   }
   if (loan.status !== 'pending') return json(409, { error: 'Cette demande a déjà reçu une réponse.' });
+
+  if (action === 'accept' && reservedPeriods(allLoans(), loan.toolId).some((period) => overlaps(period, loan))) {
+    return json(409, { error: 'L\'outil est déjà réservé sur une partie de ces dates. Tu peux refuser cette demande.' });
+  }
 
   const status = action === 'accept' ? 'accepted' : 'refused';
   answers.add({ loanId: loan.id, status });

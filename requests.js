@@ -1,27 +1,9 @@
-﻿const list = document.querySelector('#requests-list');
+﻿import { createLoanCard, paragraph } from './loan-display.js?v=bd111fe';
+
+const list = document.querySelector('#requests-list');
 const message = document.querySelector('#requests-message');
 
-const STATUS_LABELS = {
-  pending: 'En attente',
-  accepted: 'Acceptée',
-  refused: 'Refusée',
-  returned: 'Rendue',
-};
-
-const dateFormat = new Intl.DateTimeFormat('fr-FR', {
-  dateStyle: 'medium',
-  timeZone: 'UTC',
-});
-const formatDate = (date) => dateFormat.format(new Date(`${date}T00:00:00Z`));
-
 let latestLoad = 0;
-
-function paragraph(className, text) {
-  const element = document.createElement('p');
-  element.className = className;
-  element.textContent = text;
-  return element;
-}
 
 function showMessage(className, text) {
   message.replaceChildren(paragraph(className, text));
@@ -56,39 +38,17 @@ function createButton(label, className, loan, action) {
 }
 
 function createCard(loan) {
-  const card = document.createElement('article');
-  card.className = 'request-card';
-
-  const title = document.createElement('h3');
-  title.textContent = loan.tool.name;
-
-  const information = document.createElement('div');
-  information.append(
-    title,
-    paragraph('request-detail', `${loan.borrower.firstName} (${loan.borrower.district})`),
-    paragraph('request-detail', `Du ${formatDate(loan.startDate)} au ${formatDate(loan.endDate)}`),
-  );
-
-  const status = document.createElement('span');
-  status.className = `tool-status request-${loan.status}`;
-  status.textContent = STATUS_LABELS[loan.status] ?? 'Statut inconnu';
-
-  const side = document.createElement('div');
-  side.className = 'request-side';
-  side.append(status);
-
+  let actions;
   if (loan.status === 'pending') {
-    const actions = document.createElement('div');
+    actions = document.createElement('div');
     actions.className = 'request-actions';
     actions.append(
       createButton('Accepter', 'button-accept', loan, 'accept'),
       createButton('Refuser', 'button-refuse', loan, 'refuse'),
     );
-    side.append(actions);
   }
 
-  card.append(information, side);
-  return card;
+  return createLoanCard(loan, `${loan.borrower.firstName} (${loan.borrower.district})`, actions);
 }
 
 async function loadRequests() {

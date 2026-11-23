@@ -2,9 +2,9 @@
 // Ce fichier répond à la place de l'API, avec les données et la validation du projet.
 // Les comptes, les outils, les demandes et les réponses restent dans le navigateur de chaque visiteur.
 // Les mots de passe y sont hachés et ne sont jamais envoyés.
-import * as seed from './src/seed.js?v=68b5db8';
-import { overlaps, reservedPeriods, validateLoanDates } from './src/validation/loan.js?v=68b5db8';
-import { CREATION_CATEGORIES, validateTool } from './src/validation/tool.js?v=68b5db8';
+import * as seed from './src/seed.js?v=bd111fe';
+import { overlaps, reservedPeriods, validateLoanDates } from './src/validation/loan.js?v=bd111fe';
+import { CREATION_CATEGORIES, validateTool } from './src/validation/tool.js?v=bd111fe';
 
 const STATUS_ORDER = { available: 0, lent: 1, unavailable: 2 };
 
@@ -237,6 +237,21 @@ function listReceived(options) {
   return json(200, received);
 }
 
+function listMine() {
+  const user = currentUser();
+  if (!user) return json(401, { error: 'Connecte-toi pour voir tes emprunts.' });
+
+  const mine = allLoans()
+    .filter(({ borrowerId }) => borrowerId === user.id)
+    .sort((a, b) => a.startDate.localeCompare(b.startDate))
+    .map(({ id, toolId, startDate, endDate, status }) => {
+      const tool = findTool(toolId);
+      const { firstName, district } = allUsers().find((item) => item.id === tool.ownerId);
+      return { id, startDate, endDate, status, tool: { id: tool.id, name: tool.name }, owner: { firstName, district } };
+    });
+  return json(200, mine);
+}
+
 function answerLoan(options, id, action) {
   const user = currentUser(options);
   if (!user) return json(401, { error: 'Choisis ton profil avant de répondre à une demande.' });
@@ -265,6 +280,7 @@ const routes = [
   [/^GET \/api\/tools\/(\d+)\/reservations$/, listReservations],
   [/^POST \/api\/loans$/, createLoan],
   [/^GET \/api\/loans\/received$/, listReceived],
+  [/^GET \/api\/loans\/mine$/, listMine],
   [/^POST \/api\/loans\/(\d+)\/(accept|refuse)$/, answerLoan],
   [/^GET \/api\/users$/, () => json(200, allUsers().map(({ id, firstName, district }) => ({ id, firstName, district })))],
   [/^GET \/api\/auth\/me$/, me],

@@ -6,12 +6,13 @@
   <meta name="description" content="BricoLoop : le partage d'outils entre voisins.">
   <title>BricoLoop - Partage d'outils</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="style.css?v=68b5db8">
-  <script type="module" src="api-demo.js?v=68b5db8"></script>
-  <script type="module" src="main.js?v=68b5db8"></script>
-  <script type="module" src="auth.js?v=68b5db8"></script>
-  <script type="module" src="proposer.js?v=68b5db8"></script>
-  <script type="module" src="requests.js?v=68b5db8"></script>
+  <link rel="stylesheet" href="style.css?v=bd111fe">
+  <script type="module" src="api-demo.js?v=bd111fe"></script>
+  <script type="module" src="main.js?v=bd111fe"></script>
+  <script type="module" src="auth.js?v=bd111fe"></script>
+  <script type="module" src="proposer.js?v=bd111fe"></script>
+  <script type="module" src="requests.js?v=bd111fe"></script>
+  <script type="module" src="borrowings.js?v=bd111fe"></script>
 </head>
 <body>
   <header class="site-header">
@@ -24,6 +25,7 @@
       <a href="#catalogue">Catalogue</a>
       <a href="#proposer">Proposer un outil</a>
       <a href="#demandes">Demandes reçues</a>
+      <a href="#emprunts">Mes emprunts</a>
       <a href="#connexion">Connexion</a>
       <a href="#inscription">Création de compte</a>
     </nav>
@@ -129,6 +131,12 @@
     <p class="intro">Accepte ou refuse les demandes d'emprunt sur tes outils.</p>
     <div id="requests-message" role="status"></div>
     <div id="requests-list" class="requests-list"></div>
+  </main>
+
+  <main id="borrowings-page" hidden>
+    <h2>Mes emprunts</h2>
+    <p class="intro">Tes demandes et leur statut, de la plus ancienne date de début à la plus récente.</p>
+    <div id="borrowings-list" class="requests-list" aria-live="polite"></div>
   </main>
 
   <dialog id="reservation" aria-labelledby="reservation-title">

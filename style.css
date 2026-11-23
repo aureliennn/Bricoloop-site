@@ -214,13 +214,15 @@ footer {
 }
 
 #proposer-page,
-#requests-page {
+#requests-page,
+#borrowings-page {
   min-height: 65vh;
   padding: 2.5rem 0;
 }
 
 #proposer-page h2,
-#requests-page h2 {
+#requests-page h2,
+#borrowings-page h2 {
   margin: 0;
   font-size: 1.5rem;
 }

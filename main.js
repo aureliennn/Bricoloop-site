@@ -1,14 +1,16 @@
-﻿import { openReservation } from './reservation.js?v=68b5db8';
+﻿import { openReservation } from './reservation.js?v=bd111fe';
 
 const app = document.querySelector('#app');
 const authPage = document.querySelector('#auth-page');
 const proposerPage = document.querySelector('#proposer-page');
 const requestsPage = document.querySelector('#requests-page');
+const borrowingsPage = document.querySelector('#borrowings-page');
 
 const PAGES = {
   catalogue: app,
   proposer: proposerPage,
   demandes: requestsPage,
+  emprunts: borrowingsPage,
 };
 
 const STATUS_LABELS = {
@@ -195,7 +197,7 @@ async function loadTools() {
 
 function showPage() {
   const requestedPage = location.hash.slice(1) || 'connexion';
-  const page = ['catalogue', 'proposer', 'demandes', 'connexion', 'inscription'].includes(requestedPage)
+  const page = ['catalogue', 'proposer', 'demandes', 'emprunts', 'connexion', 'inscription'].includes(requestedPage)
     ? requestedPage
     : 'catalogue';
 

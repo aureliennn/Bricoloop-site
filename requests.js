@@ -1,5 +1,4 @@
-const userSelect = document.querySelector('#owner');
-const list = document.querySelector('#requests-list');
+﻿const list = document.querySelector('#requests-list');
 const message = document.querySelector('#requests-message');
 
 const STATUS_LABELS = {
@@ -8,7 +7,11 @@ const STATUS_LABELS = {
   refused: 'Refusée',
   returned: 'Rendue',
 };
-const dateFormat = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeZone: 'UTC' });
+
+const dateFormat = new Intl.DateTimeFormat('fr-FR', {
+  dateStyle: 'medium',
+  timeZone: 'UTC',
+});
 const formatDate = (date) => dateFormat.format(new Date(`${date}T00:00:00Z`));
 
 let latestLoad = 0;
@@ -25,11 +28,17 @@ function showMessage(className, text) {
 }
 
 async function callApi(url, options = {}) {
-  const response = await fetch(url, { ...options, headers: { 'X-User-Id': userSelect.value } });
+  const response = await fetch(url, {
+    ...options,
+    credentials: 'same-origin',
+    headers: {
+      ...(options.headers ?? {}),
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+    },
+  });
+
   const body = await response.json();
-  if (!response.ok) {
-    throw new Error(body.error);
-  }
+  if (!response.ok) throw new Error(body.error ?? 'Une erreur est survenue.');
   return body;
 }
 
@@ -38,7 +47,10 @@ function createButton(label, className, loan, action) {
   button.type = 'button';
   button.className = className;
   button.textContent = label;
-  button.setAttribute('aria-label', `${label} la demande de ${loan.borrower.firstName} pour ${loan.tool.name}`);
+  button.setAttribute(
+    'aria-label',
+    `${label} la demande de ${loan.borrower.firstName} pour ${loan.tool.name}`,
+  );
   button.addEventListener('click', () => answer(loan, action));
   return button;
 }
@@ -83,20 +95,16 @@ async function loadRequests() {
   latestLoad += 1;
   const load = latestLoad;
 
-  if (userSelect.value === '') {
-    list.replaceChildren(paragraph('empty-message', 'Choisis ton profil pour voir les demandes reçues.'));
-    return;
-  }
-
   try {
     const loans = await callApi('/api/loans/received');
     if (load !== latestLoad) return;
+
     list.replaceChildren(...(loans.length > 0
       ? loans.map(createCard)
       : [paragraph('empty-message', 'Aucune demande reçue pour le moment.')]));
-  } catch {
+  } catch (error) {
     if (load !== latestLoad) return;
-    list.replaceChildren(paragraph('error-message', 'Impossible de charger les demandes. Vérifie que le serveur est lancé.'));
+    list.replaceChildren(paragraph('error-message', error.message));
   }
 }
 
@@ -107,9 +115,12 @@ async function answer(loan, action) {
 
   try {
     await callApi(`/api/loans/${loan.id}/${action}`, { method: 'POST' });
-    showMessage('success-message', action === 'accept'
-      ? `Demande acceptée. L’outil « ${loan.tool.name} » est maintenant prêté.`
-      : `Demande refusée pour « ${loan.tool.name} ».`);
+    showMessage(
+      'success-message',
+      action === 'accept'
+        ? `Demande acceptée. L'outil « ${loan.tool.name} » est maintenant prêté.`
+        : `Demande refusée pour « ${loan.tool.name} ».`,
+    );
   } catch (error) {
     showMessage('error-message', error.message);
   }
@@ -117,26 +128,12 @@ async function answer(loan, action) {
   await loadRequests();
 }
 
-async function loadUsers() {
-  try {
-    const response = await fetch('/api/users');
-    const users = await response.json();
-    users.forEach(({ id, firstName, district }) => {
-      userSelect.add(new Option(`${firstName} (${district})`, id));
-    });
-  } catch {
-    showMessage('error-message', 'Impossible de charger les profils. Recharge la page.');
-  }
-}
-
-function refresh() {
-  if (location.hash === '#demandes') {
+function refresh(event) {
+  if (location.hash === '#demandes' && (!event || event.detail === 'demandes')) {
     message.replaceChildren();
     loadRequests();
   }
 }
 
-userSelect.addEventListener('change', refresh);
 window.addEventListener('hashchange', refresh);
-loadUsers();
-refresh();
+window.addEventListener('bricoloop:page', refresh);

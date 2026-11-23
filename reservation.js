@@ -1,4 +1,4 @@
-import { toolImage } from './images.js?v=b33974a';
+﻿import { toolImage } from './images.js?v=68b5db8';
 
 const dialog = document.querySelector('#reservation');
 const form = dialog.querySelector('form');
@@ -6,7 +6,6 @@ const grid = dialog.querySelector('#calendar-days');
 const message = dialog.querySelector('#reservation-message');
 const previous = dialog.querySelector('#previous-month');
 const submit = dialog.querySelector('#reservation-submit');
-const userSelect = dialog.querySelector('#borrower');
 const inputs = {
   startDate: dialog.querySelector('#start-date'),
   endDate: dialog.querySelector('#end-date'),
@@ -107,15 +106,6 @@ function pickDay(date) {
   renderCalendar();
 }
 
-async function loadUsers() {
-  if (userSelect.options.length > 1) return;
-  const users = await getJson('/api/users');
-  if (userSelect.options.length > 1) return;
-  users.forEach(({ id, firstName, district }) => {
-    userSelect.add(new Option(`${firstName} (${district})`, id));
-  });
-}
-
 export async function openReservation(selectedTool, statusLabel) {
   const now = new Date();
   tool = selectedTool;
@@ -139,10 +129,7 @@ export async function openReservation(selectedTool, statusLabel) {
   dialog.showModal();
 
   try {
-    const [periods] = await Promise.all([
-      getJson(`/api/tools/${selectedTool.id}/reservations`),
-      loadUsers(),
-    ]);
+    const periods = await getJson(`/api/tools/${selectedTool.id}/reservations`);
     if (tool !== selectedTool) return;
     reserved = periods;
     renderCalendar();
@@ -161,7 +148,7 @@ export async function openReservation(selectedTool, statusLabel) {
 async function sendRequest() {
   const response = await fetch('/api/loans', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-User-Id': userSelect.value },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       toolId: tool.id,
       startDate: inputs.startDate.value,
@@ -220,3 +207,4 @@ dialog.addEventListener('click', (event) => {
   // Un clic sur le fond sombre vise la boîte elle-même.
   if (event.target === dialog) dialog.close();
 });
+

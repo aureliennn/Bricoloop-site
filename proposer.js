@@ -2,7 +2,7 @@ const form = document.querySelector('#tool-form');
 const button = form.querySelector('button');
 const message = document.querySelector('#form-message');
 const count = document.querySelector('#description-count');
-const FIELDS = ['user', 'name', 'category', 'description'];
+const FIELDS = ['name', 'category', 'description'];
 
 const input = (field) => form.querySelector(`#${field}`);
 const value = (field) => input(field).value;
@@ -13,11 +13,8 @@ function updateCount() {
 
 function showError(field, text) {
   form.querySelector(`#${field}-error`).textContent = text;
-  if (text) {
-    input(field).setAttribute('aria-invalid', 'true');
-  } else {
-    input(field).removeAttribute('aria-invalid');
-  }
+  if (text) input(field).setAttribute('aria-invalid', 'true');
+  else input(field).removeAttribute('aria-invalid');
 }
 
 function showMessage(className, text) {
@@ -29,34 +26,37 @@ function showMessage(className, text) {
 
 async function getJson(url) {
   const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Erreur ${response.status}`);
-  }
+  if (!response.ok) throw new Error(`Erreur ${response.status}`);
   return response.json();
 }
 
 async function fillLists() {
   try {
-    const [users, categories] = await Promise.all([
-      getJson('/api/users'),
+    const [categories, accountResponse] = await Promise.all([
       getJson('/api/tools/categories'),
+      fetch('/api/auth/me'),
     ]);
 
-    users.forEach(({ id, firstName, district }) => {
-      input('user').add(new Option(`${firstName} (${district})`, id));
-    });
     categories.forEach((category) => {
       input('category').add(new Option(category, category));
     });
+
+    if (!accountResponse.ok) {
+      showMessage('error-message', 'Connecte-toi pour pouvoir proposer un outil.');
+      button.disabled = true;
+    } else {
+      button.disabled = false;
+    }
   } catch {
     showMessage('error-message', 'Impossible de charger le formulaire. Recharge la page.');
+    button.disabled = true;
   }
 }
 
 async function sendTool() {
   const response = await fetch('/api/tools', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-User-Id': value('user') },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       name: value('name'),
       category: value('category'),
@@ -69,18 +69,16 @@ async function sendTool() {
 function showResult({ status, body }) {
   if (status === 201) {
     showMessage('success-message', `« ${body.name} » est maintenant disponible dans le catalogue.`);
-    const user = value('user');
     form.reset();
-    input('user').value = user;
     updateCount();
   } else if (status === 401) {
-    showError('user', body.error);
-    input('user').focus();
+    showMessage('error-message', 'Connecte-toi avant de proposer un outil.');
+    button.disabled = true;
   } else if (body.errors) {
     body.errors.forEach((error) => showError(error.field, error.message));
     input(body.errors[0].field).focus();
   } else {
-    showMessage('error-message', body.error);
+    showMessage('error-message', body.error ?? 'Une erreur est survenue.');
   }
 }
 
@@ -95,9 +93,13 @@ form.addEventListener('submit', async (event) => {
   } catch {
     showMessage('error-message', 'Le serveur ne répond pas. Vérifie qu’il est lancé, puis réessaie.');
   } finally {
-    button.disabled = false;
+    const account = await fetch('/api/auth/me').catch(() => null);
+    button.disabled = !account?.ok;
   }
 });
 
 input('description').addEventListener('input', updateCount);
+window.addEventListener('bricoloop:page', (event) => {
+  if (event.detail === 'proposer') fillLists();
+});
 fillLists();

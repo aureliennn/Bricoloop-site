@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Découvrez les outils disponibles au prêt entre voisins.">
-  <title>BricoLoop - Catalogue des outils</title>
+  <meta name="description" content="BricoLoop : le partage d'outils entre voisins.">
+  <title>BricoLoop - Partage d'outils</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="style.css?v=b33974a">
-  <script type="module" src="api-demo.js?v=b33974a"></script>
-  <script type="module" src="main.js?v=b33974a"></script>
-  <script type="module" src="proposer.js?v=b33974a"></script>
-  <script type="module" src="requests.js?v=b33974a"></script>
+  <link rel="stylesheet" href="style.css?v=68b5db8">
+  <script type="module" src="api-demo.js?v=68b5db8"></script>
+  <script type="module" src="main.js?v=68b5db8"></script>
+  <script type="module" src="auth.js?v=68b5db8"></script>
+  <script type="module" src="proposer.js?v=68b5db8"></script>
+  <script type="module" src="requests.js?v=68b5db8"></script>
 </head>
 <body>
   <header class="site-header">
@@ -18,15 +19,80 @@
       <h1>BricoLoop</h1>
       <p>Prêter et emprunter des outils entre voisins.</p>
     </div>
+
     <nav class="tabs" aria-label="Navigation principale">
       <a href="#catalogue">Catalogue</a>
       <a href="#proposer">Proposer un outil</a>
       <a href="#demandes">Demandes reçues</a>
+      <a href="#connexion">Connexion</a>
+      <a href="#inscription">Création de compte</a>
     </nav>
+
+    <div id="account-area" class="account-area">
+      <span id="account-status">Visiteur</span>
+      <button id="logout-button" type="button" hidden>Déconnexion</button>
+    </div>
   </header>
 
-  <main id="app" aria-live="polite">
+  <main id="app" aria-live="polite" hidden>
     <p>Chargement du catalogue...</p>
+  </main>
+
+  <main id="auth-page" hidden>
+    <section class="auth-card">
+      <h2>Bienvenue sur BricoLoop</h2>
+      <p class="intro">Connecte-toi ou rejoins tes voisins pour partager vos outils.</p>
+
+      <p class="error-message"><strong>Démo :</strong> n’utilise pas un vrai mot de passe. Ton compte reste dans ce navigateur. Seule la ville tapée est envoyée, à api-adresse.data.gouv.fr, pour proposer des communes.</p>
+
+      <div class="auth-tabs" role="tablist" aria-label="Authentification">
+        <a href="#connexion" id="login-tab" role="tab">Connexion</a>
+        <a href="#inscription" id="register-tab" role="tab">Création de compte</a>
+      </div>
+
+      <form id="login-form" class="auth-form" novalidate>
+        <h3>Connexion</h3>
+        <div class="field">
+          <label for="login-username">Utilisateur</label>
+          <input id="login-username" name="username" autocomplete="username" required>
+          <p class="field-error" id="login-username-error"></p>
+        </div>
+        <div class="field">
+          <label for="login-password">Mot de passe</label>
+          <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+          <p class="field-error" id="login-password-error"></p>
+        </div>
+        <p id="login-message" class="form-message" role="alert"></p>
+        <button type="submit">Se connecter</button>
+      </form>
+
+      <form id="register-form" class="auth-form" novalidate hidden>
+        <h3>Création de compte</h3>
+        <div class="field">
+          <label for="register-email">Mail</label>
+          <input id="register-email" name="email" type="email" autocomplete="email" required>
+          <p class="field-error" id="register-email-error"></p>
+        </div>
+        <div class="field">
+          <label for="register-username">Utilisateur</label>
+          <input id="register-username" name="username" autocomplete="username" required>
+          <p class="field-error" id="register-username-error"></p>
+        </div>
+        <div class="field">
+          <label for="register-password">Mot de passe</label>
+          <input id="register-password" name="password" type="password" autocomplete="new-password" required>
+          <p class="field-hint">8 caractères minimum.</p>
+          <p class="field-error" id="register-password-error"></p>
+        </div>
+        <div class="field">
+          <label for="register-district">Ville</label>
+          <input id="register-district" name="district" placeholder="Ex. : 30000 ou Nîmes" autocomplete="off" required>
+          <p class="field-error" id="register-district-error"></p>
+        </div>
+        <p id="register-message" class="form-message" role="alert"></p>
+        <button type="submit">Créer mon compte</button>
+      </form>
+    </section>
   </main>
 
   <main id="proposer-page" hidden>
@@ -35,20 +101,11 @@
 
     <form id="tool-form" class="tool-form" novalidate>
       <div class="field">
-        <label for="user">Ton profil</label>
-        <select id="user" aria-describedby="user-error">
-          <option value="">Choisis ton profil</option>
-        </select>
-        <p class="field-error" id="user-error"></p>
-      </div>
-
-      <div class="field">
         <label for="name">Nom de l'outil</label>
         <input id="name" autocomplete="off" aria-describedby="name-hint name-error">
         <p class="field-hint" id="name-hint">Entre 2 et 60 caractères.</p>
         <p class="field-error" id="name-error"></p>
       </div>
-
       <div class="field">
         <label for="category">Catégorie</label>
         <select id="category" aria-describedby="category-error">
@@ -56,14 +113,12 @@
         </select>
         <p class="field-error" id="category-error"></p>
       </div>
-
       <div class="field">
         <label for="description">Description (facultative)</label>
         <textarea id="description" rows="4" aria-describedby="description-count description-error"></textarea>
         <p class="field-hint" id="description-count">0 / 300 caractères</p>
         <p class="field-error" id="description-error"></p>
       </div>
-
       <button type="submit">Proposer l'outil</button>
       <div id="form-message" role="status"></div>
     </form>
@@ -72,14 +127,6 @@
   <main id="requests-page" hidden>
     <h2>Demandes reçues</h2>
     <p class="intro">Accepte ou refuse les demandes d'emprunt sur tes outils.</p>
-
-    <div class="field owner-field">
-      <label for="owner">Ton profil</label>
-      <select id="owner">
-        <option value="">Choisis ton profil</option>
-      </select>
-    </div>
-
     <div id="requests-message" role="status"></div>
     <div id="requests-list" class="requests-list"></div>
   </main>
@@ -112,12 +159,6 @@
       </div>
 
       <form class="reservation-form" novalidate>
-        <div class="field">
-          <label for="borrower">Ton profil</label>
-          <select id="borrower">
-            <option value="">Choisis ton profil</option>
-          </select>
-        </div>
         <div class="reservation-dates">
           <div class="field">
             <label for="start-date">Du</label>
@@ -136,7 +177,7 @@
 
   <footer>
     <p>BricoLoop - Le partage d'outils entre voisins.</p>
-    <p>Démo en ligne : tes ajouts et tes réponses restent dans ton navigateur.</p>
+    <p>Démo en ligne : ton compte, tes ajouts et tes réponses restent dans ton navigateur.</p>
   </footer>
 </body>
 </html>

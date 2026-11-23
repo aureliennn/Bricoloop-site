@@ -3,10 +3,10 @@
 export const CATEGORIES = ['Perçage', 'Jardinage', 'Peinture', 'Nettoyage', 'Mesure', 'Autre'];
 
 export const users = [
-  { id: 1, firstName: 'Alice', district: 'Centre' },
-  { id: 2, firstName: 'Bilal', district: 'Gare' },
-  { id: 3, firstName: 'Chloé', district: 'Les Jardins' },
-  { id: 4, firstName: 'David', district: 'Centre' },
+  { id: 1, firstName: 'Alice', lastName: 'Martin', district: 'Centre' },
+  { id: 2, firstName: 'Bilal', lastName: 'Benali', district: 'Gare' },
+  { id: 3, firstName: 'Chloé', lastName: 'Dubois', district: 'Les Jardins' },
+  { id: 4, firstName: 'David', lastName: 'Laurent', district: 'Centre' },
 ];
 
 export const tools = [

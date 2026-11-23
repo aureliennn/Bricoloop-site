@@ -1,9 +1,10 @@
 // Version en ligne seulement : GitHub Pages n'a pas de serveur.
 // Ce fichier répond à la place de l'API, avec les données et la validation du projet.
-// Les outils, les demandes et les réponses sont gardés dans le navigateur de chaque visiteur.
-import * as seed from './src/seed.js?v=b33974a';
-import { overlaps, reservedPeriods, validateLoanDates } from './src/validation/loan.js?v=b33974a';
-import { CREATION_CATEGORIES, validateTool } from './src/validation/tool.js?v=b33974a';
+// Les comptes, les outils, les demandes et les réponses restent dans le navigateur de chaque visiteur.
+// Les mots de passe y sont hachés et ne sont jamais envoyés.
+import * as seed from './src/seed.js?v=68b5db8';
+import { overlaps, reservedPeriods, validateLoanDates } from './src/validation/loan.js?v=68b5db8';
+import { CREATION_CATEGORIES, validateTool } from './src/validation/tool.js?v=68b5db8';
 
 const STATUS_ORDER = { available: 0, lent: 1, unavailable: 2 };
 
@@ -33,6 +34,37 @@ function savedList(key) {
 const addedTools = savedList('bricoloop-outils-ajoutes');
 const addedLoans = savedList('bricoloop-demandes');
 const answers = savedList('bricoloop-reponses');
+const accounts = savedList('bricoloop-comptes');
+const allUsers = () => [...seed.users, ...accounts.all()];
+
+const SESSION_KEY = 'bricoloop-session';
+let memorySession = null;
+
+function getSession() {
+  try {
+    return Number(localStorage.getItem(SESSION_KEY)) || memorySession;
+  } catch {
+    return memorySession;
+  }
+}
+
+function setSession(userId) {
+  memorySession = userId;
+  try {
+    if (userId === null) localStorage.removeItem(SESSION_KEY);
+    else localStorage.setItem(SESSION_KEY, String(userId));
+  } catch {
+    // La session reste en mémoire jusqu'au rechargement.
+  }
+}
+
+const toHex = (bytes) => [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+
+async function hashPassword(password, salt) {
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const params = { name: 'PBKDF2', hash: 'SHA-256', salt: new TextEncoder().encode(salt), iterations: 210000 };
+  return toHex(await crypto.subtle.deriveBits(params, key, 256));
+}
 
 function allLoans() {
   const saved = answers.all();
@@ -60,9 +92,86 @@ const json = (status, body) => new Response(JSON.stringify(body), {
 
 const invalid = (errors) => json(400, { error: errors.map(({ message }) => message).join(' '), errors });
 
-function currentUser(options) {
-  const userId = Number(new Headers(options.headers).get('X-User-Id'));
-  return seed.users.find(({ id }) => id === userId);
+const currentUser = () => allUsers().find(({ id }) => id === getSession());
+
+function publicUser(user) {
+  return { id: user.id, username: user.username ?? user.firstName, email: user.email ?? null, district: user.district };
+}
+
+// Mêmes règles que src/routes/auth.js, qui ne peut pas tourner dans un navigateur.
+function validateRegistration(body) {
+  const errors = [];
+  const text = (value) => (typeof value === 'string' ? value.trim() : '');
+  const email = text(body.email).toLowerCase();
+  const username = text(body.username);
+  const password = typeof body.password === 'string' ? body.password : '';
+  const district = text(body.district);
+
+  if (!email) errors.push({ field: 'email', message: 'L’adresse e-mail est obligatoire.' });
+  else if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push({ field: 'email', message: 'L’adresse e-mail est invalide.' });
+
+  if (!username) errors.push({ field: 'username', message: 'Le nom d’utilisateur est obligatoire.' });
+  else if (!/^[a-zA-Z0-9_-]{3,24}$/.test(username)) errors.push({ field: 'username', message: 'Le nom d’utilisateur doit contenir 3 à 24 caractères : lettres, chiffres, tirets ou underscores.' });
+
+  if (!password) errors.push({ field: 'password', message: 'Le mot de passe est obligatoire.' });
+  else if (password.length < 8 || password.length > 128) errors.push({ field: 'password', message: 'Le mot de passe doit contenir entre 8 et 128 caractères.' });
+
+  if (!district) errors.push({ field: 'district', message: 'Le quartier est obligatoire.' });
+  else if (district.length < 2 || district.length > 80) errors.push({ field: 'district', message: 'Le quartier doit contenir entre 2 et 80 caractères.' });
+
+  return { errors, email, username, password, district };
+}
+
+const sameName = (user, username) => (user.username ?? user.firstName).toLowerCase() === username.toLowerCase();
+
+async function register(options) {
+  const { errors, email, username, password, district } = validateRegistration(JSON.parse(options.body));
+  if (errors.length > 0) return json(400, { error: 'Certains champs sont invalides.', errors });
+
+  const duplicates = [];
+  if (allUsers().some((user) => user.email === email)) duplicates.push({ field: 'email', message: 'Cette adresse e-mail est déjà utilisée.' });
+  if (allUsers().some((user) => sameName(user, username))) duplicates.push({ field: 'username', message: 'Ce nom d’utilisateur est déjà utilisé.' });
+  if (duplicates.length > 0) return json(409, { error: 'Un compte utilise déjà ces informations.', errors: duplicates });
+
+  const salt = toHex(crypto.getRandomValues(new Uint8Array(16)));
+  const passwordHash = await hashPassword(password, salt);
+  const user = { id: nextId(allUsers()), username, firstName: username, email, district, salt, passwordHash };
+  accounts.add(user);
+  setSession(user.id);
+  return json(201, { message: 'Ton compte a été créé avec succès.', user: publicUser(user) });
+}
+
+async function login(options) {
+  const { username, password } = JSON.parse(options.body);
+  if (!username?.trim() || !password) return json(400, { error: 'Renseigne ton nom d’utilisateur et ton mot de passe.' });
+
+  const user = allUsers().find((item) => sameName(item, username.trim()));
+  if (!user?.passwordHash || (await hashPassword(password, user.salt)) !== user.passwordHash) {
+    return json(401, { error: 'Nom d’utilisateur ou mot de passe incorrect.' });
+  }
+  setSession(user.id);
+  return json(200, { message: 'Connexion réussie.', user: publicUser(user) });
+}
+
+function me() {
+  const user = currentUser();
+  return user ? json(200, { user: publicUser(user) }) : json(401, { error: 'Tu n’es pas connecté.' });
+}
+
+function logout() {
+  setSession(null);
+  return json(200, { message: 'Tu es maintenant déconnecté.' });
+}
+
+function showTool(options, id) {
+  const tool = findTool(Number(id));
+  if (!tool) return json(404, { error: 'Outil introuvable.' });
+  const { name, category, description, status } = tool;
+  const owner = allUsers().find((user) => user.id === tool.ownerId);
+  return json(200, {
+    id: tool.id, name, category, description, status,
+    owner: owner ? { firstName: owner.firstName, lastName: owner.lastName ?? null, district: owner.district } : null,
+  });
 }
 
 function listTools() {
@@ -122,7 +231,7 @@ function listReceived(options) {
     })
     .map(({ id, toolId, borrowerId, startDate, endDate, status }) => {
       const tool = myTools.find((item) => item.id === toolId);
-      const { firstName, district } = seed.users.find((item) => item.id === borrowerId);
+      const { firstName, district } = allUsers().find((item) => item.id === borrowerId);
       return { id, startDate, endDate, status, tool: { id: tool.id, name: tool.name }, borrower: { firstName, district } };
     });
   return json(200, received);
@@ -152,11 +261,16 @@ const routes = [
   [/^GET \/api\/tools$/, listTools],
   [/^POST \/api\/tools$/, createTool],
   [/^GET \/api\/tools\/categories$/, () => json(200, CREATION_CATEGORIES)],
+  [/^GET \/api\/tools\/(\d+)$/, showTool],
   [/^GET \/api\/tools\/(\d+)\/reservations$/, listReservations],
   [/^POST \/api\/loans$/, createLoan],
   [/^GET \/api\/loans\/received$/, listReceived],
   [/^POST \/api\/loans\/(\d+)\/(accept|refuse)$/, answerLoan],
-  [/^GET \/api\/users$/, () => json(200, seed.users)],
+  [/^GET \/api\/users$/, () => json(200, allUsers().map(({ id, firstName, district }) => ({ id, firstName, district })))],
+  [/^GET \/api\/auth\/me$/, me],
+  [/^POST \/api\/auth\/register$/, register],
+  [/^POST \/api\/auth\/login$/, login],
+  [/^POST \/api\/auth\/logout$/, logout],
 ];
 
 const realFetch = window.fetch.bind(window);
